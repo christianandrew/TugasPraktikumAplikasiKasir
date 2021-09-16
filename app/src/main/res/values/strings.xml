@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">sale</string>
+    <string name="hint1">name</string>
+    <string name="nameCus">Name Customer</string>
+    <string name="nama_barang">Nama Barang :</string>
+    <string name="jumlah_barang">Jumlah Barang :</string>
+    <string name="harga_rp">Harga : Rp</string>
+    <string name="uang_bayar">Uang Bayar :</string>
+    <string name="proses">Proses</string>
+    <string name="hapus_data">Hapus Data</string>
+    <string name="keluar">Keluar</string>
+</resources>
