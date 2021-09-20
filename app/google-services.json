@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "305948160142",
+    "project_id": "android-555cb",
+    "storage_bucket": "android-555cb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:305948160142:android:59adb4483d4f7155bdd9df",
+        "android_client_info": {
+          "package_name": "com.example.tugaspraktikum"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "305948160142-b1j1k2911ha640oq6jpmmvsg2rthaphi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAW-q2hWqWdSdbn59GX-ObvZ6xbKBw70sw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "305948160142-b1j1k2911ha640oq6jpmmvsg2rthaphi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

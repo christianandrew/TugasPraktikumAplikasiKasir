@@ -1,49 +1,78 @@
 package com.example.tugaspraktikum;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity {
-    EditText etNamaPelanggan, etNamaBarang, etJmlBarang, etHarga, etJmlUang;
-    TextView tvNamaPembeli, tvNamaBarang, tvJmlBarang, tvHarga, tvUangBayar,
-            tvTotal, tvKembalian, tvBonus, tvKeterangan;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
+public class MainActivity<firebaseDatabase, databaseReference> extends AppCompatActivity {
+    EditText etNamaPelanggan,etjumlahBarang;
+    String customerName;
+    TextView namaBarang;
+    String jumlahBarang;
     Button btnProses, btnHapus, btnKeluar;
 
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-    String namaPelanggan, namaBarang, jumlahBarang, hargaBarang, uangBayar;
-    double jmlBarang, hrgBarang, uangByr, total, kembalian;
+//  Database listview
+    ListView listView;
+    ArrayList<String> nameList = new ArrayList<>();
+    ArrayAdapter<String> arrayAdapter;
+
+
+//    String namaPelanggan, namaBarang, jumlahBarang, hargaBarang, uangBayar;
+    double jmlBarang, hrgBarang, total, kembalian;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        getSupportActionBar().setTitle("Aplikasi Penjualan");
+        setContentView(R.layout.main_new);
+        if(getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(getString(R.string.aplikasi));
+        }
 
-        //
+//      Call Database
+        listView = (ListView) findViewById(R.id.list);
+
 
         //EditText
         etNamaPelanggan = findViewById(R.id.etNamaPelanggan);
-//        etNamaBarang = findViewById(R.id.etNamaBarang);
-//        etJmlBarang = findViewById(R.id.etJmlBarang);
-//        etHarga = findViewById(R.id.etHarga);
-//        etJmlUang = findViewById(R.id.etJmlUang);
-
+        etjumlahBarang = findViewById(R.id.etjumlahBarang);
         //TextView
-//        tvNamaPembeli = findViewById(R.id.tvNamaPembeli);
-//        tvNamaBarang = findViewById(R.id.tvNamaBarang);
-//        tvJmlBarang = findViewById(R.id.tvJmlBarang);
-//        tvHarga = findViewById(R.id.tvHarga);
-//        tvUangBayar = findViewById(R.id.tvUangBayar);
-//        tvTotal = findViewById(R.id.tvTotal);
-//        tvKembalian = findViewById(R.id.tvKembalian);
-//        tvBonus = findViewById(R.id.tvBonus);
-//        tvKeterangan = findViewById(R.id.tvKeterangan);
+//        customerName = findViewById(R.id.customerName);
+//        tvnamaBarang = findViewById(R.id.namaBarang);
+//        tvjumlahBarang = findViewById(R.id.jumlahBarang);
 
         //Button
         btnProses = findViewById(R.id.btnProses);
@@ -55,42 +84,40 @@ public class MainActivity extends AppCompatActivity {
             @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View view) {
-                namaPelanggan = etNamaPelanggan.getText().toString().trim();
-                namaBarang = etNamaBarang.getText().toString().trim();
-                jumlahBarang = etJmlBarang.getText().toString().trim();
-                hargaBarang = etHarga.getText().toString().trim();
-                uangBayar = etJmlUang.getText().toString().trim();
+                customerName = etNamaPelanggan.getText().toString().trim();
+                jumlahBarang = etjumlahBarang.getText().toString().trim();
+//                hargaBarang = etHarga.getText().toString().trim();
+//                uangBayar = etJmlUang.getText().toString().trim();
 
-                jmlBarang = Double.parseDouble(jumlahBarang);
-                hrgBarang = Double.parseDouble(hargaBarang);
-                uangByr = Double.parseDouble(uangBayar);
-                total = (jmlBarang * hrgBarang);
+//                jmlBarang = Double.parseDouble(String.valueOf(jumlahBarang));
+//                hrgBarang = Double.parseDouble(hargaBarang);
+//                uangByr = Double.parseDouble(uangBayar);
+//                total = (jmlBarang * hrgBarang);
+//                tvNamaPembeli.setText("Nama Pembeli : " + namaPelanggan);
+//                tvNamaBarang.setText("Nama Barang : " + namaBarang);
+//                tvJmlBarang.setText("Jumlah Barang : " + jumlahBarang);
+//                tvHarga.setText("Harga Barang : " + hargaBarang);
+//                tvUangBayar.setText("Uang bayar : " + uangBayar);
 
-                tvNamaPembeli.setText("Nama Pembeli : " + namaPelanggan);
-                tvNamaBarang.setText("Nama Barang : " + namaBarang);
-                tvJmlBarang.setText("Jumlah Barang : " + jumlahBarang);
-                tvHarga.setText("Harga Barang : " + hargaBarang);
-                tvUangBayar.setText("Uang bayar : " + uangBayar);
-
-                tvTotal.setText("Total Belanja " + total);
-                if (total >= 200000) {
-                    tvBonus.setText("Bonus : HardDisk 1TB");
-                } else if (total >= 50000) {
-                    tvBonus.setText("Bonus : Keyboard Gaming");
-                } else if (total >= 40000) {
-                    tvBonus.setText("Bonus : Mouse Gaming");
-                } else {
-                    tvBonus.setText("Bonus : Tidak ada bonus!");
-                }
-
-                kembalian = (uangByr - total);
-                if (uangByr < total) {
-                    tvKeterangan.setText("Keterangan : Uang bayar kurang Rp. " + (-kembalian));
-                    tvKembalian.setText("Uang Kembalian : Rp. 0");
-                } else {
-                    tvKeterangan.setText("Keterangan : Tunggu kembalian");
-                    tvKembalian.setText("Uang Kembalian : Rp. " + kembalian);
-                }
+//                tvTotal.setText("Total Belanja " + total);
+//                if (total >= 200000) {
+//                    tvBonus.setText("Bonus : HardDisk 1TB");
+//                } else if (total >= 50000) {
+//                    tvBonus.setText("Bonus : Keyboard Gaming");
+//                } else if (total >= 40000) {
+//                    tvBonus.setText("Bonus : Mouse Gaming");
+//                } else {
+//                    tvBonus.setText("Bonus : Tidak ada bonus!");
+//                }
+//
+//                kembalian = (uangByr - total);
+//                if (uangByr < total) {
+//                    tvKeterangan.setText("Keterangan : Uang bayar kurang Rp. " + (-kembalian));
+//                    tvKembalian.setText("Uang Kembalian : Rp. 0");
+//                } else {
+//                    tvKeterangan.setText("Keterangan : Tunggu kembalian");
+//                    tvKembalian.setText("Uang Kembalian : Rp. " + kembalian);
+//                }
 
             }
         });
@@ -98,15 +125,38 @@ public class MainActivity extends AppCompatActivity {
         btnHapus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                tvNamaPembeli.setText("");
-                tvNamaBarang.setText("");
-                tvJmlBarang.setText("");
-                tvHarga.setText("");
-                tvUangBayar.setText("");
-                tvKembalian.setText("");
-                tvKeterangan.setText("");
-                tvBonus.setText("");
-                tvTotal.setText("");
+                // Create a new user with a first and last name
+                Map<String, Object> user = new HashMap<>();
+                user.put("namaBarang", "Kacang Sukro");
+                user.put("hargaBarang", 50000);
+                user.put("id", 005);
+
+                // Add a new document with a generated ID
+                db.collection("produk")
+                        .add(user)
+                        .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                            @Override
+                            public void onSuccess(DocumentReference documentReference) {
+                                Toast.makeText(MainActivity.this, "Success", Toast.LENGTH_SHORT).show();
+//                                Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(MainActivity.this, "Fail", Toast.LENGTH_SHORT).show();
+//                                Log.w(TAG, "Error adding document", e);
+                            }
+                        });
+//                tvNamaPembeli.setText("");
+//                tvNamaBarang.setText("");
+//                tvJmlBarang.setText("");
+//                tvHarga.setText("");
+//                tvUangBayar.setText("");
+//                tvKembalian.setText("");
+//                tvKeterangan.setText("");
+//                tvBonus.setText("");
+//                tvTotal.setText("");
 
                 Toast.makeText(getApplicationContext(), "Data sudah dihapus", Toast.LENGTH_SHORT).show();
             }
