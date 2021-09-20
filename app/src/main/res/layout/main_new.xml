@@ -73,16 +73,6 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="SpeakableTextPresentCheck" />
 
-    <ListView
-        android:id="@+id/list"
-        android:layout_width="192dp"
-        android:layout_height="48dp"
-        android:layout_marginTop="80dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.727"
-        app:layout_constraintStart_toEndOf="@+id/namaBarang"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <Button
         android:id="@+id/btnProses"
         android:layout_width="301dp"
@@ -120,6 +110,16 @@
         android:layout_height="206dp"
         android:layout_marginStart="12dp"
         android:layout_marginTop="216dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Spinner
+        android:id="@+id/spinner"
+        android:layout_width="194dp"
+        android:layout_height="39dp"
+        android:layout_marginTop="88dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.909"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

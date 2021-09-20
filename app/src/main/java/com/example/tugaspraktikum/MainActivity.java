@@ -7,14 +7,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Pair;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.internal.Constants;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -24,6 +27,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -34,6 +39,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -48,8 +54,11 @@ public class MainActivity<firebaseDatabase, databaseReference> extends AppCompat
 
 //  Database listview
     ListView listView;
-    ArrayList<String> nameList = new ArrayList<>();
-    ArrayAdapter<String> arrayAdapter;
+    ArrayList<String> productList = new ArrayList<>();
+    ArrayAdapter<String> ArrayAdapter;
+
+
+
 
 
 //    String namaPelanggan, namaBarang, jumlahBarang, hargaBarang, uangBayar;
@@ -63,8 +72,41 @@ public class MainActivity<firebaseDatabase, databaseReference> extends AppCompat
         }
 
 //      Call Database
-        listView = (ListView) findViewById(R.id.list);
-
+        db.collection("produk")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+//                                productList.add(document.getData().get("namaBarang").toString());
+                                System.out.println(document.getData().get("namaBarang").toString());
+                            }
+                        } else {
+                            Log.w("Text", "Error getting documents.", task.getException());
+                        }
+                    }
+                });
+//      Spinner
+        FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
+        CollectionReference subjectsRef = rootRef.collection("produk");
+        Spinner spinner = (Spinner) findViewById(R.id.spinner);
+        List<String> subjects = new ArrayList<>();
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_spinner_item, subjects);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        subjectsRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        String subject = document.getString("namaBarang");
+                        subjects.add(subject);
+                    }
+                    adapter.notifyDataSetChanged();
+                }
+            }
+        });
 
         //EditText
         etNamaPelanggan = findViewById(R.id.etNamaPelanggan);
