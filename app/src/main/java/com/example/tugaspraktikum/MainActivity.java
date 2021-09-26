@@ -37,23 +37,31 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.auth.User;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class MainActivity<firebaseDatabase, databaseReference> extends AppCompatActivity {
+import javax.security.auth.Subject;
+
+public class MainActivity<firebaseDatabase, databaseReference, x> extends AppCompatActivity {
     EditText etnamaPelanggan,etjumlahBarang;
-    String customerName,namaBarang;
+    String customerName;
+    String namaBarang;
+    int index;
     double jumlahBarang;
     Button btnProses, btnHapus, btnKeluar;
+    Spinner spinner;
 
+
+    ArrayList<String> namaProduk;
+    ArrayList<Pair<String,Product>> listproduk;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-//    String namaPelanggan, namaBarang, jumlahBarang, hargaBarang, uangBayar;
-//    double jmlBarang, hrgBarang, total, kembalian;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +69,8 @@ public class MainActivity<firebaseDatabase, databaseReference> extends AppCompat
         if(getSupportActionBar() != null) {
             getSupportActionBar().setTitle(getString(R.string.aplikasi));
         }
+
+        spinner = findViewById(R.id.spinner);
 
 //      Database Call
         db.collection("produk")
@@ -84,35 +94,23 @@ public class MainActivity<firebaseDatabase, databaseReference> extends AppCompat
         FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
         CollectionReference subjectsRef = rootRef.collection("produk");
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
-        List<String> subjects = new ArrayList<>();
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_spinner_item, subjects);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
+
+        namaProduk = new ArrayList<>();
+        listproduk = new ArrayList<>();
 
         subjectsRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if (task.isSuccessful()) {
                     for (QueryDocumentSnapshot document : task.getResult()) {
-                        String subject = document.getString("namaBarang");
-                        subjects.add(subject);
+                        listproduk.add(new Pair<>(document.getId(), new Product(document.getData().get("namaBarang").toString(), Integer.parseInt(document.getData().get("hargaBarang").toString()))));
+                        namaProduk.add(document.getData().get("namaBarang").toString());
                     }
-                    adapter.notifyDataSetChanged();
+                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_spinner_item, namaProduk);
+                    spinner.setAdapter(adapter);
                 }
             }
         });
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-                Object item = parent.getItemAtPosition(pos);
-                System.out.println(item);
-            }
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
-
-
-
-
 //      Spinner End
 
         //EditText
@@ -124,75 +122,6 @@ public class MainActivity<firebaseDatabase, databaseReference> extends AppCompat
         btnHapus = findViewById(R.id.btnHapus);
         btnKeluar = findViewById(R.id.btnKeluar);
 
-        //Proses
-//        btnProses.setOnClickListener(new View.OnClickListener() {
-////            @SuppressLint("SetTextI18n")
-//            @Override
-//            public void onClick(View view) {
-//                customerName = findViewById(R.id.etNamaPelanggan);
-//
-////                customerName = etNamaPelanggan.getText().toString().trim();
-////                jumlahBarang = etjumlahBarang.getText().toString().trim();
-//                // Create a new user with a first and last name
-//                Map<String, Object> user = new HashMap<>();
-//                user.put("customerName", customerName);
-//                user.put("jumlahBarang",jumlahBarang);
-////                user.put("namaBarang", "Kacang Sukro");
-////                user.put("hargaBarang", 50000);
-////                user.put("id", 005);
-//
-//                // Add a new document with a generated ID
-//                db.collection("users")
-//                        .add(user)
-//                        .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-//                            @Override
-//                            public void onSuccess(DocumentReference documentReference) {
-//                                Toast.makeText(MainActivity.this, "Success", Toast.LENGTH_SHORT).show();
-////                                Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
-//                            }
-//                        })
-//                        .addOnFailureListener(new OnFailureListener() {
-//                            @Override
-//                            public void onFailure(@NonNull Exception e) {
-//                                Toast.makeText(MainActivity.this, "Fail", Toast.LENGTH_SHORT).show();
-////                                Log.w(TAG, "Error adding document", e);
-//                            }
-//                        });
-//                hargaBarang = etHarga.getText().toString().trim();
-//                uangBayar = etJmlUang.getText().toString().trim();
-
-//                jmlBarang = Double.parseDouble(String.valueOf(jumlahBarang));
-//                hrgBarang = Double.parseDouble(hargaBarang);
-//                uangByr = Double.parseDouble(uangBayar);
-//                total = (jmlBarang * hrgBarang);
-//                tvNamaPembeli.setText("Nama Pembeli : " + namaPelanggan);
-//                tvNamaBarang.setText("Nama Barang : " + namaBarang);
-//                tvJmlBarang.setText("Jumlah Barang : " + jumlahBarang);
-//                tvHarga.setText("Harga Barang : " + hargaBarang);
-//                tvUangBayar.setText("Uang bayar : " + uangBayar);
-
-//                tvTotal.setText("Total Belanja " + total);
-//                if (total >= 200000) {
-//                    tvBonus.setText("Bonus : HardDisk 1TB");
-//                } else if (total >= 50000) {
-//                    tvBonus.setText("Bonus : Keyboard Gaming");
-//                } else if (total >= 40000) {
-//                    tvBonus.setText("Bonus : Mouse Gaming");
-//                } else {
-//                    tvBonus.setText("Bonus : Tidak ada bonus!");
-//                }
-//
-//                kembalian = (uangByr - total);
-//                if (uangByr < total) {
-//                    tvKeterangan.setText("Keterangan : Uang bayar kurang Rp. " + (-kembalian));
-//                    tvKembalian.setText("Uang Kembalian : Rp. 0");
-//                } else {
-//                    tvKeterangan.setText("Keterangan : Tunggu kembalian");
-//                    tvKembalian.setText("Uang Kembalian : Rp. " + kembalian);
-//                }
-//
-//            }
-//        });
 
         btnHapus.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -213,18 +142,23 @@ public class MainActivity<firebaseDatabase, databaseReference> extends AppCompat
         btnProses.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
+
+                String spinner_data = spinner.getSelectedItem().toString();
+                index = namaProduk.indexOf(spinner_data);
+                System.out.println(index);
+
+                String product_id = listproduk.get(index).first;
+                Integer hargabarang = listproduk.get(index).second.getHargaBarang();
+
                 customerName = etnamaPelanggan.getText().toString().trim();
                 int value=Integer.parseInt(etjumlahBarang.getText().toString());
-                // Create a new user with a first and last name
-                Map<String, Object> user = new HashMap<>();
-                user.put("namaPelanggan", customerName);
-                user.put("jumlahBarang", value);
-//                user.put("jumlahBarang", jumlahBarang);
-//                user.put("id", 005);
+
+                UserCart push = new UserCart(customerName,product_id,value,hargabarang * value);
 
                 // Add a new document with a generated ID
                 db.collection("users")
-                        .add(user)
+                        .add(push)
                         .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                             @Override
                             public void onSuccess(DocumentReference documentReference) {
