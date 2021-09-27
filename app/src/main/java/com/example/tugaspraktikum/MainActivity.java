@@ -1,66 +1,54 @@
 package com.example.tugaspraktikum;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.AdapterView;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.internal.Constants;
+import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.auth.User;
 
-import java.lang.reflect.Array;
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
-import javax.security.auth.Subject;
-
-public class MainActivity<firebaseDatabase, databaseReference, x> extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
     EditText etnamaPelanggan,etjumlahBarang;
     String customerName;
-    String namaBarang;
     int index;
-    double jumlahBarang;
     Button btnProses, btnHapus, btnKeluar;
     Spinner spinner;
-
-
     ArrayList<String> namaProduk;
     ArrayList<Pair<String,Product>> listproduk;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+    private RecyclerView firestorelist;
+    private FirestoreRecyclerAdapter<ProductModel, ProductViewHolder> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +68,6 @@ public class MainActivity<firebaseDatabase, databaseReference, x> extends AppCom
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
-//                                productList.add(document.getData().get("namaBarang").toString());
                                 System.out.println(document.getData().get("namaBarang").toString());
                             }
                         } else {
@@ -93,7 +80,7 @@ public class MainActivity<firebaseDatabase, databaseReference, x> extends AppCom
 //      Spinner Start
         FirebaseFirestore rootRef = FirebaseFirestore.getInstance();
         CollectionReference subjectsRef = rootRef.collection("produk");
-        Spinner spinner = (Spinner) findViewById(R.id.spinner);
+        Spinner spinner = findViewById(R.id.spinner);
 
         namaProduk = new ArrayList<>();
         listproduk = new ArrayList<>();
@@ -112,6 +99,65 @@ public class MainActivity<firebaseDatabase, databaseReference, x> extends AppCom
             }
         });
 //      Spinner End
+
+//      Recycler View
+//        firestorelist = findViewById(R.id.recyclerView);
+//
+//
+//        Query query = db.collection("produk");
+//
+//        FirestoreRecyclerOptions<ProductModel> options = new FirestoreRecyclerOptions.Builder<ProductModel>()
+//                .setQuery(query, ProductModel.class)
+//                .build();
+//
+//        adapter = new FirestoreRecyclerAdapter<ProductModel, ProductHolder>(options) {
+//            @Override
+//            public void onBindViewHolder(ProductHolder holder, int position, ProductModel model) {
+//                holder.list_name.setText(model.getNamaBarang());
+//                holder.list_price.setText(model.getHargaBarang());
+//            }
+//            @Override
+//            public ProductHolder onCreateViewHolder(ViewGroup group, int i) {
+//                View view = LayoutInflater.from(group.getContext())
+//                        .inflate(R.layout.list_item, group, false);
+//                return new ProductHolder(view);
+//            }
+//            @Override
+//            public void onError(FirebaseFirestoreException e) {
+//                Log.e("error", e.getMessage());
+//            }
+//        };
+//        firestorelist.setHasFixedSize(true);
+//        firestorelist.setLayoutManager(new LinearLayoutManager(this));
+//        firestorelist.setAdapter(adapter);
+//      End Recview
+
+//       Test Recview
+        RecyclerView recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        Query query = db.collection("users");
+        FirestoreRecyclerOptions<ProductModel> options = new FirestoreRecyclerOptions.Builder<ProductModel>()
+                .setQuery(query, ProductModel.class)
+                .build();
+
+        adapter = new FirestoreRecyclerAdapter<ProductModel, ProductViewHolder>(options) {
+            @Override
+            protected void onBindViewHolder(@NonNull ProductViewHolder holder, int position, @NonNull ProductModel model) {
+                holder.setProductName(model.getNamaPelanggan());
+                holder.setProductPrice(model.getTotalBelanja());
+            }
+
+            @NonNull
+            @Override
+            public ProductViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item, parent, false);
+                return new ProductViewHolder(view);
+            }
+        };
+        recyclerView.setAdapter(adapter);
+
+
 
         //EditText
         etnamaPelanggan = findViewById(R.id.etnamaPelanggan);
@@ -146,7 +192,7 @@ public class MainActivity<firebaseDatabase, databaseReference, x> extends AppCom
 
                 String spinner_data = spinner.getSelectedItem().toString();
                 index = namaProduk.indexOf(spinner_data);
-                System.out.println(index);
+//                System.out.println(index);
 
                 String product_id = listproduk.get(index).first;
                 Integer hargabarang = listproduk.get(index).second.getHargaBarang();
@@ -177,5 +223,36 @@ public class MainActivity<firebaseDatabase, databaseReference, x> extends AppCom
             }
         });
 
+    }
+    private class ProductViewHolder extends RecyclerView.ViewHolder {
+        private View view;
+
+        ProductViewHolder(View itemView) {
+            super(itemView);
+            view = itemView;
+        }
+
+        void setProductName(String namaPelanggan) {
+            TextView textView = view.findViewById(R.id.list_namaPelanggan);
+            textView.setText(namaPelanggan);
+        }
+        void setProductPrice(Integer totalBelanja) {
+            TextView textView = view.findViewById(R.id.list_totalBelanja);
+            textView.setText(String.valueOf(totalBelanja));
+        }
+    }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        adapter.startListening();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        if (adapter != null) {
+            adapter.stopListening();
+        }
     }
 }
