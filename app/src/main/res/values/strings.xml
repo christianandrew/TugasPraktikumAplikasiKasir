@@ -7,8 +7,9 @@
     <string name="jumlah_barang">Jumlah Barang :</string>
     <string name="harga_rp">Harga : Rp</string>
     <string name="uang_bayar">Uang Bayar :</string>
-    <string name="proses">Proses</string>
-    <string name="hapus_data">Hapus Data</string>
+    <string name="proses">Tambah</string>
+    <string name="hapus_data">Proses</string>
     <string name="keluar">Keluar</string>
     <string name="aplikasi">Aplikasi Penjualan</string>
+    <string name="keranjang">Lihat Keranjang</string>
 </resources>

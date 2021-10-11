@@ -27,6 +27,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
@@ -36,19 +37,22 @@ import com.google.firebase.firestore.QuerySnapshot;
 import org.w3c.dom.Text;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     EditText etnamaPelanggan,etjumlahBarang;
     String customerName;
     int index;
-    Button btnProses, btnHapus, btnKeluar;
+    Button btnProses, btnHapus, btnKeluar, btnKeranjang;
     Spinner spinner;
     ArrayList<String> namaProduk;
     ArrayList<Pair<String,Product>> listproduk;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-    private RecyclerView firestorelist;
     private FirestoreRecyclerAdapter<ProductModel, ProductViewHolder> adapter;
+    ArrayList<OrderedProduct> cart = new ArrayList<>();
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
         if(getSupportActionBar() != null) {
             getSupportActionBar().setTitle(getString(R.string.aplikasi));
         }
+
 
         spinner = findViewById(R.id.spinner);
 
@@ -101,42 +106,10 @@ public class MainActivity extends AppCompatActivity {
 //      Spinner End
 
 //      Recycler View
-//        firestorelist = findViewById(R.id.recyclerView);
-//
-//
-//        Query query = db.collection("produk");
-//
-//        FirestoreRecyclerOptions<ProductModel> options = new FirestoreRecyclerOptions.Builder<ProductModel>()
-//                .setQuery(query, ProductModel.class)
-//                .build();
-//
-//        adapter = new FirestoreRecyclerAdapter<ProductModel, ProductHolder>(options) {
-//            @Override
-//            public void onBindViewHolder(ProductHolder holder, int position, ProductModel model) {
-//                holder.list_name.setText(model.getNamaBarang());
-//                holder.list_price.setText(model.getHargaBarang());
-//            }
-//            @Override
-//            public ProductHolder onCreateViewHolder(ViewGroup group, int i) {
-//                View view = LayoutInflater.from(group.getContext())
-//                        .inflate(R.layout.list_item, group, false);
-//                return new ProductHolder(view);
-//            }
-//            @Override
-//            public void onError(FirebaseFirestoreException e) {
-//                Log.e("error", e.getMessage());
-//            }
-//        };
-//        firestorelist.setHasFixedSize(true);
-//        firestorelist.setLayoutManager(new LinearLayoutManager(this));
-//        firestorelist.setAdapter(adapter);
-//      End Recview
-
-//       Test Recview
-        RecyclerView recyclerView = findViewById(R.id.recyclerView);
+        RecyclerView recyclerView = findViewById(R.id.recyclerView1);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        Query query = db.collection("users");
+        Query query = db.collection("users").orderBy("namaPelanggan",Query.Direction.ASCENDING);
         FirestoreRecyclerOptions<ProductModel> options = new FirestoreRecyclerOptions.Builder<ProductModel>()
                 .setQuery(query, ProductModel.class)
                 .build();
@@ -156,6 +129,7 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         recyclerView.setAdapter(adapter);
+//      End Recview
 
 
 
@@ -167,6 +141,7 @@ public class MainActivity extends AppCompatActivity {
         btnProses = findViewById(R.id.btnProses);
         btnHapus = findViewById(R.id.btnHapus);
         btnKeluar = findViewById(R.id.btnKeluar);
+        btnKeranjang = findViewById(R.id.btnKeranjang);
 
 
         btnHapus.setOnClickListener(new View.OnClickListener() {
@@ -192,15 +167,16 @@ public class MainActivity extends AppCompatActivity {
 
                 String spinner_data = spinner.getSelectedItem().toString();
                 index = namaProduk.indexOf(spinner_data);
-//                System.out.println(index);
-
                 String product_id = listproduk.get(index).first;
                 Integer hargabarang = listproduk.get(index).second.getHargaBarang();
+//              Check if exists
+
 
                 customerName = etnamaPelanggan.getText().toString().trim();
                 int value=Integer.parseInt(etjumlahBarang.getText().toString());
 
                 UserCart push = new UserCart(customerName,product_id,value,hargabarang * value);
+
 
                 // Add a new document with a generated ID
                 db.collection("users")
@@ -223,6 +199,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        btnKeranjang.setOnClickListener(view -> {
+            Intent intent = new Intent(MainActivity.this,CartActivity.class);
+            startActivity(intent);
+        });
+
     }
     private class ProductViewHolder extends RecyclerView.ViewHolder {
         private View view;
@@ -240,6 +221,28 @@ public class MainActivity extends AppCompatActivity {
             TextView textView = view.findViewById(R.id.list_totalBelanja);
             textView.setText(String.valueOf(totalBelanja));
         }
+    }
+
+    private void fetchNewData(){
+
+        List<OrderedProduct> newCartList = new ArrayList<>();
+
+        db.collection("/users").get().addOnCompleteListener(task -> {
+            if(task.isSuccessful()){
+                for(QueryDocumentSnapshot document : task.getResult()){
+                    newCartList.add(
+                            new OrderedProduct(
+                                    document.getData().get("namaPelanggan").toString(),
+                                    document.getData().get("productId").toString(),
+                                    Integer.parseInt(document.getData().get("jumlahBarang").toString()))
+                    );
+                }
+            }
+            cart.clear();
+            cart.addAll(newCartList);
+        });
+
+
     }
     @Override
     protected void onStart() {
